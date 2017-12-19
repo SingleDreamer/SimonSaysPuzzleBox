@@ -1,13 +1,14 @@
 /*
   The circuit:
-  - LED attached from pin 13 - 11 to ground
-  - pushbutton attached to pin 2 - 5 from +5V
-  - 10K resistor attached to pin 2 -5 from ground
-  - Speaker to pin 8 
-  - Servo to pin 9  
+  - 4 LEDs attached from pin 13 - 10 to ground
+  - 4 Pushbuttons attached to pin 2 - 5 from +5V
+  - 4 10K resistor attached to pin 2 - 5 from ground
+  - 8 ohm speaker on digital pin 8
+  - Servo control to pin 9  
 */
 
 #include <Servo.h>
+
 #include "pitches.h"
 
 /*************************************************
@@ -77,12 +78,14 @@ bool stateChanged1 = false;
 bool stateChanged2 = false; 
 bool stateChanged3 = false; 
 bool stateChanged4 = false; 
-long button1Timer = 0; 
-long button2Timer = 0; 
-long button3Timer = 0; 
-long button4Timer = 0; 
-long pressTime = 20; 
+unsigned long button1Timer = 0; 
+unsigned long button2Timer = 0; 
+unsigned long button3Timer = 0; 
+unsigned long button4Timer = 0; 
+unsigned long pressTime = 20; 
 bool pressActive = false; 
+
+unsigned long timer = 0; 
 
 void generate() {
   Serial.println("new game");
@@ -93,8 +96,8 @@ void generate() {
     gameOrder[i] = random(1, numLEDs+1); 
     Serial.println(gameOrder[i]); 
   }
-//  flash(gameOrder[0]); 
   play(gameOrder[0]);
+  timer = millis(); 
 }
 
 void setup() {
@@ -121,6 +124,17 @@ void setup() {
 }
 
 void loop() {
+
+  if (count <= ENDGAMESIZE) {
+    Serial.println(timer);
+   //   Serial.println(millis());
+
+    if ((millis() - timer) > 5000) {
+      count = ENDGAMESIZE + 1; 
+      Serial.println("lose by time");
+      endSequence();
+    }
+  }
   
   // read the state of the pushbutton value:
   button1State = digitalRead(buttonPin1);
@@ -190,21 +204,6 @@ void loop() {
   }
 }
 
-//void flash(int input) {
-//  play(input); fl
-////  if (input == 1) {
-////    play(1);
-////  }
-////  if (input == 2) {
-////    play(2);
-////  }
-////  if (input == 3) {
-////    play(3);
-////  }
-////  if (input == 4) {
-////    play(4);
-////  }
-//}
 
 void startSequence() {
   Serial.println("start");
@@ -333,24 +332,11 @@ void play(int i) {
   }
 }
 
-//something something something 
 void nextInput(int input) {
   // if ended 
   if (count > ENDGAMESIZE) {
     Serial.println("ended");
-    //myservo.write(180); 
-      //delay(1500);
       myservo.write(90); 
-//    if (pos < 90) {
-//      Serial.println("close");
-//    for (pos = 0; pos <= 90; pos += 1) { // goes from 0 degrees to 180 degrees
-//        // in steps of 1 degree
-//        myservo.write(pos);              // tell servo to go to position in variable 'pos'
-//        delay(15);                       // waits 15ms for the servo to reach the position
-//      }
-//    }else {
-//      myservo.write(90);
-//    }
 
       
     count = 0; 
@@ -362,8 +348,6 @@ void nextInput(int input) {
 
     // else: valid input
     Serial.println("valid"); 
-//    Serial.println(count); 
-//    Serial.println(current); 
     count++;  
     if (count == current) {
       if (current-1 == ENDGAMESIZE) {
@@ -375,14 +359,7 @@ void nextInput(int input) {
       count = ENDGAMESIZE + 1;
 
       Serial.println("open");
-//      for (pos = 90; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-//        myservo.write(pos);              // tell servo to go to position in variable 'pos'
-//        delay(15);                       // waits 15ms for the servo to reach the position
-//      }
-      //myservo.write(0); 
-      //delay(150);
       myservo.write(180); 
-      
       return;
     } 
       Serial.println("print pattern");
@@ -390,11 +367,11 @@ void nextInput(int input) {
       current++; 
       count = 0; 
       for (int i = 0; i < (current); i++) {
-//        flash(gameOrder[i]);  
         play(gameOrder[i]);  
-        delay(1000);
+        delay(500);
       }
     }
+    timer = millis(); 
     return;
   }
   else {
