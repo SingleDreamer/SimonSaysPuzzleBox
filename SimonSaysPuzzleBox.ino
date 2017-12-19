@@ -5,6 +5,12 @@
   - 4 10K resistor attached to pin 2 - 5 from ground
   - 8 ohm speaker on digital pin 8
   - Servo control to pin 9  
+
+  code handling buttons based off 
+  http://www.instructables.com/id/How-to-use-a-Push-Button-Arduino-Tutorial/
+  and 
+  http://www.instructables.com/id/Arduino-Dual-Function-Button-Long-PressShort-Press/
+ 
 */
 
 #include <Servo.h>
@@ -33,6 +39,9 @@ const int RED = NOTE_C4;
 const int BLUE = NOTE_D4;
 const int YELLOW = NOTE_E4; 
 const int GREEN = NOTE_F4; 
+
+const unsigned long pressTime = 20; 
+const unsigned long waitTime = 5000; 
 
 int win_melody[] = {
   NOTE_C5, NOTE_C5, NOTE_C5, NOTE_C5, NOTE_GS4, NOTE_AS4, NOTE_C5, 0, NOTE_AS4, NOTE_C5, -1
@@ -82,7 +91,6 @@ unsigned long button1Timer = 0;
 unsigned long button2Timer = 0; 
 unsigned long button3Timer = 0; 
 unsigned long button4Timer = 0; 
-unsigned long pressTime = 20; 
 bool pressActive = false; 
 
 unsigned long timer = 0; 
@@ -129,7 +137,7 @@ void loop() {
     Serial.println(timer);
    //   Serial.println(millis());
 
-    if ((millis() - timer) > 5000) {
+    if ((millis() - timer) > waitTime) {
       count = ENDGAMESIZE + 1; 
       Serial.println("lose by time");
       endSequence();
